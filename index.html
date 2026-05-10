@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Kontrol</title>
+    
+    <!-- SDK Firebase yang diperlukan agar database berfungsi -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #6200ee; margin-top: 0; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        input:focus, textarea:focus { border-color: #6200ee; outline: none; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #6200ee; color: white; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button:active { background: #3700b3; transform: scale(0.98); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Panel Database</h2>
+    
+    <div class="input-group">
+        <label>Versi Aplikasi</label>
+        <input type="text" id="version" placeholder="Contoh: 1.4">
+    </div>
+
+    <div class="input-group">
+        <label>Judul Notifikasi</label>
+        <input type="text" id="title" placeholder="Masukkan judul update">
+    </div>
+
+    <div class="input-group">
+        <label>Pesan Update</label>
+        <textarea id="message" rows="4" placeholder="Tulis rincian update..."></textarea>
+    </div>
+
+    <div class="input-group">
+        <label>Link Download</label>
+        <input type="text" id="link" placeholder="https://...">
+    </div>
+
+    <button id="btnSimpan">SIMPAN KE FIREBASE</button>
+</div>
+
+<script>
+    // Konfigurasi Firebase dari Project Settings Anda
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZf_ryAlbzvJ1NL_g9VGmk4HAC3lZxWls",
+        authDomain: "albimodata.firebaseapp.com",
+        databaseURL: "https://albimodata-default-rtdb.firebaseio.com",
+        projectId: "albimodata",
+        storageBucket: "albimodata.firebasestorage.app",
+        messagingSenderId: "785773949318",
+        appId: "1:785773949318:web:227af8f0a4e1c03dd53c07",
+        measurementId: "G-BB7JSR3J4V"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // Referensi ke path "update" sesuai kode Java Anda
+    const updateRef = database.ref('update');
+
+    // 1. Sinkronisasi Otomatis (Realtime Update)
+    // Saat data di Firebase berubah, kolom input akan terisi otomatis
+    updateRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('version').value = data.version || "";
+            document.getElementById('title').value = data.title || "";
+            document.getElementById('message').value = data.message || "";
+            document.getElementById('link').value = data.link || "";
+        }
+    });
+
+    // 2. Fungsi Tombol Simpan
+    document.getElementById('btnSimpan').onclick = function() {
+        const btn = this;
+        btn.innerText = "Mengirim...";
+        btn.disabled = true;
+
+        // Ambil data dari kolom input
+        const dataBaru = {
+            version: document.getElementById('version').value,
+            title: document.getElementById('title').value,
+            message: document.getElementById('message').value,
+            link: document.getElementById('link').value
+        };
+
+        // Simpan ke Firebase
+        updateRef.set(dataBaru)
+            .then(() => {
+                alert("✅ Sukses! Database telah diperbarui.");
+            })
+            .catch((error) => {
+                alert("❌ Gagal: " + error.message);
+            })
+            .finally(() => {
+                btn.innerText = "SIMPAN KE FIREBASE";
+                btn.disabled = false;
+            });
+    };
+</script>
+
+</body>
+</html>
