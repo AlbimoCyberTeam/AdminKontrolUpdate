@@ -5,20 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Kontrol</title>
     
-    <!-- PERBAIKAN: Memanggil SDK Firebase yang Benar -->
+    <!-- PERBAIKAN: SDK Firebase yang benar -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: sans-serif; background: #f0f0f0; margin: 0; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #6200ee; margin-top: 0; }
         .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; margin-bottom: 5px; font-weight: bold; color: #333; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        input:focus, textarea:focus { border-color: #6200ee; outline: none; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #6200ee; color: white; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button:active { background: #3700b3; transform: scale(0.98); }
+        label { display: block; font-size: 12px; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 5px; background: #6200ee; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
         button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
@@ -29,80 +27,78 @@
     
     <div class="input-group">
         <label>Versi Aplikasi</label>
-        <input type="text" id="version" placeholder="Contoh: 1.4">
+        <input type="text" id="v" placeholder="Contoh: 1.4">
     </div>
 
     <div class="input-group">
         <label>Judul Notifikasi</label>
-        <input type="text" id="title" placeholder="Masukkan judul update">
+        <input type="text" id="t" placeholder="Judul update">
     </div>
 
     <div class="input-group">
         <label>Pesan Update</label>
-        <textarea id="message" rows="4" placeholder="Tulis rincian update..."></textarea>
+        <textarea id="m" rows="3" placeholder="Pesan untuk user"></textarea>
     </div>
 
     <div class="input-group">
         <label>Link Download</label>
-        <input type="text" id="link" placeholder="https://...">
+        <input type="text" id="l" placeholder="https://...">
     </div>
 
     <button id="btnSimpan">SIMPAN KE FIREBASE</button>
 </div>
 
 <script>
-    // Konfigurasi Firebase Anda (Tetap sama)
+    // PERBAIKAN: Konfigurasi dengan Database URL yang lengkap
     const firebaseConfig = {
         apiKey: "AIzaSyBZf_ryAlbzvJ1NL_g9VGmk4HAC3lZxWls",
-        authDomain: "albimodata.firebaseapp.com",
-        databaseURL: "https://albimodata-default-rtdb.firebaseio.com",
+        authDomain: "://firebaseapp.com",
+        databaseURL: "https://firebaseio.com",
         projectId: "albimodata",
         storageBucket: "albimodata.firebasestorage.app",
         messagingSenderId: "785773949318",
-        appId: "1:785773949318:web:227af8f0a4e1c03dd53c07",
-        measurementId: "G-BB7JSR3J4V"
+        appId: "1:785773949318:web:227af8f0a4e1c03dd53c07"
     };
 
-    // Inisialisasi
+    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const updateRef = database.ref('update');
+    const db = firebase.database();
+    const ref = db.ref('update');
 
-    // Sinkronisasi Otomatis
-    updateRef.on('value', (snapshot) => {
+    // Ambil data saat ini agar user tahu apa yang sudah ada di database
+    ref.on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) {
-            document.getElementById('version').value = data.version || "";
-            document.getElementById('title').value = data.title || "";
-            document.getElementById('message').value = data.message || "";
-            document.getElementById('link').value = data.link || "";
+        if(data) {
+            document.getElementById('v').value = data.version || "";
+            document.getElementById('t').value = data.title || "";
+            document.getElementById('m').value = data.message || "";
+            document.getElementById('l').value = data.link || "";
         }
     });
 
-    // Fungsi Tombol Simpan
+    // Fungsi klik tombol Simpan
     document.getElementById('btnSimpan').onclick = function() {
         const btn = this;
-        btn.innerText = "Mengirim...";
         btn.disabled = true;
-
+        btn.innerText = "Sedang Menyimpan...";
+        
         const dataBaru = {
-            version: document.getElementById('version').value,
-            title: document.getElementById('title').value,
-            message: document.getElementById('message').value,
-            link: document.getElementById('link').value
+            version: document.getElementById('v').value,
+            title: document.getElementById('t').value,
+            message: document.getElementById('m').value,
+            link: document.getElementById('l').value
         };
 
-        updateRef.set(dataBaru)
+        ref.set(dataBaru)
             .then(() => {
-                alert("✅ Sukses! Database telah diperbarui.");
+                alert("✅ Berhasil memperbarui database!");
             })
             .catch((error) => {
                 alert("❌ Gagal: " + error.message);
-                console.error(error);
             })
             .finally(() => {
-                btn.innerText = "SIMPAN KE FIREBASE";
                 btn.disabled = false;
+                btn.innerText = "SIMPAN KE FIREBASE";
             });
     };
 </script>
